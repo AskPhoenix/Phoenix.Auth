@@ -18,16 +18,7 @@ builder.Services.AddDbContext<ApplicationContext>(o =>
     o.UseLazyLoadingProxies()
     .UseSqlServer(builder.Configuration.GetConnectionString("PhoenixConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(o =>
-{
-    o.User.AllowedUserNameCharacters = null;
-    o.Password.RequireDigit = false;
-    o.Password.RequireLowercase = false;
-    o.Password.RequireNonAlphanumeric = false;
-    o.Password.RequireUppercase = false;
-    o.Password.RequiredLength = 6;
-})
-    .AddRoles<ApplicationRole>()
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
     .AddUserStore<ApplicationStore>()
     .AddUserManager<ApplicationUserManager>()
     .AddEntityFrameworkStores<ApplicationContext>()
@@ -38,13 +29,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
             ValidateLifetime = true,
+            ValidateAudience = false,
+            ValidateIssuer = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            //ValidAudiences = builder.Configuration.GetSection("Jwt:Audiences").Get<string[]>(),
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
@@ -65,28 +54,6 @@ builder.Services.AddSwaggerGen(o =>
         Title = "Sphinx API",
         Description = "An authentication API for the Phoenix backend",
         Version = "3.0"
-    });
-
-    var jwtSecurityScheme = new OpenApiSecurityScheme
-    {
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        Description = "Enter the JWT Bearer token.",
-        In = ParameterLocation.Header,
-        Name = "JWT Authentication",
-        Type = SecuritySchemeType.Http,
-
-        Reference = new OpenApiReference
-        {
-            Id = JwtBearerDefaults.AuthenticationScheme,
-            Type = ReferenceType.SecurityScheme
-        }
-    };
-    o.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
-
-    o.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { jwtSecurityScheme, Array.Empty<string>() }
     });
 
     o.SchemaFilter<SwaggerExcludeFilter>();
