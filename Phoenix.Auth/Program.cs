@@ -13,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
 // Add services to the container.
-
 builder.Services.AddDbContext<ApplicationContext>(o =>
     o.UseLazyLoadingProxies()
     .UseSqlServer(builder.Configuration.GetConnectionString("PhoenixConnection")));
@@ -42,6 +41,7 @@ builder.Services.AddApplicationInsightsTelemetry(
     o => o.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]);
 
 builder.Services.AddControllers();
+builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(o =>
@@ -70,6 +70,7 @@ builder.Logging.ClearProviders()
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -81,15 +82,12 @@ else
     app.UseHsts();
 }
 
-// TODO: Hide Swagger documentation
+// Configure the HTTP request pipeline.
+// if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 app.UseSwagger();
-app.UseSwaggerUI(o => o.SwaggerEndpoint("/swagger/v3/swagger.json", "Sphinx v3"));
+app.UseSwaggerUI(o => o.SwaggerEndpoint("/swagger/v3/swagger.json", "Ardea v3"));
 
 app.UseHttpsRedirection();
-
-app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-
-app.UseRouting();
 
 app.UseAuthentication();
 
