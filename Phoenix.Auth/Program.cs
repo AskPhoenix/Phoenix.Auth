@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Phoenix.DataHandle.Api;
 using Phoenix.DataHandle.Identity;
 using System.Text;
 
@@ -55,8 +54,6 @@ builder.Services.AddSwaggerGen(o =>
         Description = "An authentication API for the Phoenix backend",
         Version = "3.0"
     });
-
-    o.SchemaFilter<SwaggerExcludeFilter>();
 });
 
 // Configure Logging
@@ -85,7 +82,7 @@ else
 // Configure the HTTP request pipeline.
 // if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 app.UseSwagger();
-app.UseSwaggerUI(o => o.SwaggerEndpoint("/swagger/v3/swagger.json", "Ardea v3"));
+app.UseSwaggerUI(o => o.SwaggerEndpoint("/swagger/v3/swagger.json", "Sphinx v3"));
 
 app.UseHttpsRedirection();
 
