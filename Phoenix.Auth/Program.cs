@@ -81,8 +81,12 @@ else
 
 // Configure the HTTP request pipeline.
 // if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
-app.UseSwagger();
-app.UseSwaggerUI(o => o.SwaggerEndpoint("/swagger/v3/swagger.json", "Sphinx v3"));
+app.UseSwagger(o => o.RouteTemplate = "/doc/{documentname}/swagger.json");
+app.UseSwaggerUI(o => 
+{
+    o.SwaggerEndpoint("/doc/v3/swagger.json", "Sphinx v3");
+    o.RoutePrefix = "doc";
+});
 
 app.UseHttpsRedirection();
 
