@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Phoenix.Auth.Models;
+using Phoenix.Auth.Models.Auth;
 using Phoenix.DataHandle.Identity;
 using Phoenix.DataHandle.Main.Types;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,36 +10,31 @@ using System.Text;
 namespace Phoenix.Auth.Controllers
 {
     [ApiController]
-    public class AuthController : Controller
+    [Route("api/[controller]")]
+    public class AuthenticationController : Controller
     {
-        private readonly ILogger<AuthController> _logger;
+        private readonly ILogger<AuthenticationController> _logger;
         private readonly IConfiguration _configuration;
         private readonly ApplicationUserManager _userManager;
 
-        public AuthController(
+        public AuthenticationController(
             ApplicationUserManager userManager,
-            ILogger<AuthController> logger,
+            ILogger<AuthenticationController> logger,
             IConfiguration configuration)
         {
             _logger = logger;
             _userManager = userManager;
             _configuration = configuration;
         }
-
-        // TODO: Verify that the [FromBody] and ModelState.IsValid are not required for [ApiController]
-
-        [AllowAnonymous]
-        [HttpPost("basic")]
-        public async Task<IActionResult> LoginBasicAsync(BasicTokenRequest tokenRequest)
+        
+        [HttpPost("basic-phone")]
+        public async Task<IActionResult> LoginBasicAsync([FromBody] LoginBasicPhoneModel loginBasic)
         {
-            _logger.LogInformation("Api -> Login -> Authenticate -> Basic");
-
-            if (tokenRequest is null)
-                return BadRequest(nameof(tokenRequest) + " argument cannot be null.");
+            _logger.LogInformation("Api -> Login -> Authenticate -> Basic Phone");
 
             try
             {
-                var appUser = await AuthenticateBasicAsync(tokenRequest);
+                var appUser = await AuthenticateBasicPhoneAsync(loginBasic);
                 if (appUser is null)
                     return NotFound("User not found");
 
@@ -48,14 +42,33 @@ namespace Phoenix.Auth.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, "Basic authentication failed");
+                _logger.LogCritical(ex, "Basic Phone authentication failed");
                 return StatusCode(StatusCodes.Status500InternalServerError,  "Authentication failed");
             }
         }
 
-        [AllowAnonymous]
+        [HttpPost("basic-email")]
+        public async Task<IActionResult> LoginBasicAsync([FromBody] LoginBasicEmailModel loginBasic)
+        {
+            _logger.LogInformation("Api -> Login -> Authenticate -> Basic Email");
+
+            try
+            {
+                var appUser = await AuthenticateBasicEmailAsync(loginBasic);
+                if (appUser is null)
+                    return NotFound("User not found");
+
+                return Ok(await GenerateTokenAsync(appUser));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, "Basic Email authentication failed");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Authentication failed");
+            }
+        }
+
         [HttpPost("facebook")]
-        public async Task<IActionResult> LoginFacebookAsync(FacebookTokenRequest tokenRequest)
+        public async Task<IActionResult> LoginFacebookAsync([FromBody] LoginFacebookModel tokenRequest)
         {
             _logger.LogInformation("Api -> Authentication -> Authenticate -> Facebook");
 
@@ -77,7 +90,8 @@ namespace Phoenix.Auth.Controllers
             }
         }
 
-        private async Task<ApplicationUser?> AuthenticateBasicAsync(BasicTokenRequest tokenRequest, CancellationToken cancellationToken = default)
+        private async Task<ApplicationUser?> AuthenticateBasicPhoneAsync(LoginBasicPhoneModel tokenRequest,
+            CancellationToken cancellationToken = default)
         {
             var appUser = await _userManager.FindByPhoneNumberAsync(tokenRequest.Phone, cancellationToken);
 
@@ -102,7 +116,33 @@ namespace Phoenix.Auth.Controllers
             return appUser;
         }
 
-        private async Task<ApplicationUser?> AuthenticateFacebookAsync(FacebookTokenRequest tokenRequest, CancellationToken cancellationToken = default)
+        private async Task<ApplicationUser?> AuthenticateBasicEmailAsync(LoginBasicEmailModel tokenRequest)
+        {
+            var appUser = await _userManager.FindByEmailAsync(tokenRequest.Email);
+
+            if (appUser is null)
+            {
+                _logger.LogError("No User found with email {email}", tokenRequest.Email);
+                return null;
+            }
+
+            if (!appUser.EmailConfirmed)
+            {
+                _logger.LogError("The email {email} must be confirmed before authentication", appUser.Email);
+                return null;
+            }
+
+            if (!await this._userManager.CheckPasswordAsync(appUser, tokenRequest.Password))
+            {
+                _logger.LogError("The password for user with email {eamil} is not correct", appUser.Email);
+                return null;
+            }
+
+            return appUser;
+        }
+
+        private async Task<ApplicationUser?> AuthenticateFacebookAsync(LoginFacebookModel tokenRequest,
+            CancellationToken cancellationToken = default)
         {
             var appUser = await _userManager.FindByProviderKeyAsync(ChannelProvider.Facebook.ToString(), tokenRequest.FacebookId, cancellationToken);
 

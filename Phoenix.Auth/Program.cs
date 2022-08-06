@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Phoenix.DataHandle.Identity;
+using Phoenix.DataHandle.Main.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,20 +13,24 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
 
 // Add services to the container.
-builder.Services.AddDbContext<ApplicationContext>(o =>
-    o.UseLazyLoadingProxies()
-    .UseSqlServer(builder.Configuration.GetConnectionString("PhoenixConnection")));
+Action<DbContextOptionsBuilder> buildDbContextOptions = o => o
+    .UseLazyLoadingProxies()
+    .UseSqlServer(builder.Configuration.GetConnectionString("PhoenixConnection"));
+
+builder.Services.AddDbContext<ApplicationContext>(buildDbContextOptions);
+builder.Services.AddDbContext<PhoenixContext>(buildDbContextOptions);
 
 builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+    .AddRoles<ApplicationRole>()
     .AddUserStore<ApplicationStore>()
     .AddUserManager<ApplicationUserManager>()
     .AddEntityFrameworkStores<ApplicationContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer(o =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        o.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateLifetime = true,
             ValidateAudience = false,
@@ -41,8 +46,10 @@ builder.Services.AddApplicationInsightsTelemetry(
 
 builder.Services.AddControllers();
 builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
+builder.Services.AddRouting(o => o.LowercaseUrls = true);
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGenNewtonsoftSupport();
 builder.Services.AddSwaggerGen(o =>
 {
     o.EnableAnnotations();
