@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Phoenix.Auth.Models.Account;
 using Phoenix.DataHandle.Base;
@@ -7,6 +6,7 @@ using Phoenix.DataHandle.Identity;
 using Phoenix.DataHandle.Main.Models;
 using Phoenix.DataHandle.Main.Types;
 using Phoenix.DataHandle.Repositories;
+using Phoenix.DataHandle.Senders;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -19,7 +19,7 @@ namespace Phoenix.Auth.Controllers
     {
         private readonly ILogger<AccountController> _logger;
         private readonly ApplicationUserManager _userManager;
-        //private readonly IEmailSender _emailSender;
+        private readonly EmailSender _emailSender;
 
         private readonly UserRepository _userRepository;
         private readonly DevRegistrationRepository _devRegistrationRepository;
@@ -27,12 +27,12 @@ namespace Phoenix.Auth.Controllers
         public AccountController(
             ILogger<AccountController> logger,
             ApplicationUserManager userManager,
-            PhoenixContext phoenixContext)
-            //IEmailSender emailSender)
+            PhoenixContext phoenixContext,
+            EmailSender emailSender)
         {
             _logger = logger;
             _userManager = userManager;
-            //_emailSender = emailSender;
+            _emailSender = emailSender;
 
             _userRepository = new(phoenixContext);
             _devRegistrationRepository = new(phoenixContext);
@@ -92,12 +92,13 @@ namespace Phoenix.Auth.Controllers
                         pageHandler: null,
                         values: new { userId, token },
                         protocol: Request.Scheme)!;
+            callbackUrl = HtmlEncoder.Default.Encode(callbackUrl);
 
-            // TODO: Send e-mail
-
-            //await _emailSender.SendEmailAsync(model.Email, "Confirm your email for AskPhoenix backend",
-            //            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>" +
-            //            $"clicking here</a>.");
+            await _emailSender.SendAsync(
+                to: model.Email,
+                subject: "Confirm your email",
+                plainTextContent: null,
+                htmlContent: $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
 
             return Ok("Account created successfully. Please check your email to verify your account.");
         }
@@ -139,10 +140,13 @@ namespace Phoenix.Auth.Controllers
                 pageHandler: null,
                 values: new { userId, token },
                 protocol: Request.Scheme)!;
+            callbackUrl = HtmlEncoder.Default.Encode(callbackUrl);
 
-            //await _emailSender.SendEmailAsync(email, "Confirm your email for AskPhoenix backend",
-            //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>" +
-            //    $"clicking here</a>.");
+            await _emailSender.SendAsync(
+                to: email,
+                subject: "Confirm your email",
+                plainTextContent: null,
+                htmlContent: $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
 
             return Ok("Verification email sent. Please check your email.");
         }
@@ -165,11 +169,15 @@ namespace Phoenix.Auth.Controllers
                 pageHandler: null,
                 values: null,
                 protocol: Request.Scheme)!;
+            callbackUrl = HtmlEncoder.Default.Encode(callbackUrl);
 
-            //await _emailSender.SendEmailAsync(model.Email, "Change Password",
-            //    "Please reset your password by including the following token in your next POST " +
-            //    $"request to <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>:\n" +
-            //    $"token = <i>{token}</i>");
+            await _emailSender.SendAsync(
+                to: email,
+                subject: "Change your password",
+                plainTextContent: null,
+                htmlContent: "You can reset your password by including the following token " +
+                    $"in a POST request to <a href='{callbackUrl}'>:\n" +
+                    $"token = <i>{token}</i>");
 
             return Ok("Please check your email to change your password.");
         }

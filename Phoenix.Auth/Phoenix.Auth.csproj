@@ -17,9 +17,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="6.0.*" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.*" />
-    <PackageReference Include="Phoenix.DataHandle" Version="3.0.0-beta1.104" />
+    <PackageReference Include="Phoenix.DataHandle" Version="3.0.0-beta1.*" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.4.*" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="6.4.*" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.4.*" />
   </ItemGroup>
 
