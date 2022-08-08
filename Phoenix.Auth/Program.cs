@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Phoenix.DataHandle.Api.Swagger;
 using Phoenix.DataHandle.Identity;
 using Phoenix.DataHandle.Main.Models;
 using Phoenix.DataHandle.Senders;
 using System.Text;
+using static Phoenix.DataHandle.Api.DocumentationHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +50,8 @@ builder.Services.AddScoped(_ =>
 builder.Services.AddApplicationInsightsTelemetry(
     o => o.ConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"]);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddNewtonsoftJson();
 builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
 builder.Services.AddRouting(o => o.LowercaseUrls = true);
 
@@ -65,6 +68,10 @@ builder.Services.AddSwaggerGen(o =>
         Description = "An authentication API for the Phoenix backend",
         Version = "3.0"
     });
+
+    o.AddSecurityDefinition(JWTSecurityScheme.Reference.Id, JWTSecurityScheme);
+
+    o.OperationFilter<AuthorizedActionFilter>();
 });
 
 // Configure Logging
@@ -77,7 +84,6 @@ builder.Logging.ClearProviders()
 
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
