@@ -106,7 +106,6 @@ namespace Phoenix.Auth.Controllers
             await _emailSender.SendAsync(
                 to: model.Email,
                 subject: "AskPhoenix Dev - Account Confirmation",
-                plainTextContent: null,
                 htmlContent: $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
 
             return Ok("Account created successfully. Please check your email to verify your account.");
@@ -136,7 +135,6 @@ namespace Phoenix.Auth.Controllers
             await _emailSender.SendAsync(
                 to: email,
                 subject: "AskPhoenix Dev - Account Confirmation",
-                plainTextContent: null,
                 htmlContent: $"Please confirm your account by <a href='{callbackUrl}'>clicking here</a>.");
 
             return Ok("Verification email sent. Please check your email.");
@@ -202,9 +200,8 @@ namespace Phoenix.Auth.Controllers
             await _emailSender.SendAsync(
                 to: email,
                 subject: "AskPhoenix Dev - Reset Password",
-                plainTextContent: null,
                 htmlContent: "Please reset your password by using the following token in a POST request at " +
-                $"<a href='{callbackUrl}'>{callbackUrl}</a>:\n\n{token}\n");
+                    $"<a href='{callbackUrl}'>{callbackUrl}</a>:\n\n{token}\n");
 
             return Ok("Please check your email to reset your password.");
         }
