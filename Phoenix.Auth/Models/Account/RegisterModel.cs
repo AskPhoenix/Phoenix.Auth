@@ -1,7 +1,6 @@
 ﻿#nullable disable
 
 using Newtonsoft.Json;
-using Phoenix.DataHandle.Api.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace Phoenix.Auth.Models.Account
@@ -14,6 +13,12 @@ namespace Phoenix.Auth.Models.Account
 
         [JsonProperty("key", Required = Required.Always)]
         public string Key { get; set; }
+
+        [JsonProperty("first_name", Required = Required.Always)]
+        public string Firstname { get; set; }
+
+        [JsonProperty("last_name", Required = Required.Always)]
+        public string LastName { get; set; }
 
         [Phone]
         [JsonProperty("phone", Required = Required.Always)]
@@ -28,8 +33,5 @@ namespace Phoenix.Auth.Models.Account
         [Compare(nameof(Password), ErrorMessage = "The password and confirmation password do not match.")]
         [JsonProperty("confirm_password", Required = Required.Always)]
         public string ConfirmPassword { get; set; }
-
-        [JsonProperty("user_info", Required = Required.Always)]
-        public UserApi User { get; set; }
     }
 }

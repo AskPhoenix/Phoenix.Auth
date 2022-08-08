@@ -75,8 +75,14 @@ namespace Phoenix.Auth.Controllers
             _logger.LogInformation("Application User created successfully");
             _logger.LogInformation("Creating Phoenix User...");
 
-            var user = model.User.ToUser();
-            user.AspNetUserId = userId;
+            var user = new User()
+            {
+                AspNetUserId = userId,
+                FirstName = model.Firstname,
+                LastName = model.LastName,
+                DependenceOrder = 0,
+                IsSelfDetermined = true
+            };
 
             await _userRepository.CreateAsync(user);
 
