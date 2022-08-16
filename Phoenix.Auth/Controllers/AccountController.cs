@@ -17,7 +17,7 @@ using System.Text.Encodings.Web;
 namespace Phoenix.Auth.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/dev")]
     public class AccountController : ApplicationController
     {
         private readonly ApplicationStore _appStore;
@@ -32,7 +32,7 @@ namespace Phoenix.Auth.Controllers
             EmailSender emailSender)
             : base(phoenixContext, userManager, logger)
         {
-            _appStore = (appStore as ApplicationStore)!;
+            _appStore = (ApplicationStore)appStore;
             _emailSender = emailSender;
             _devRegistrationRepository = new(phoenixContext);
         }
