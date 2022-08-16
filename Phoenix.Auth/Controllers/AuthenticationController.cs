@@ -101,11 +101,11 @@ namespace Phoenix.Auth.Controllers
                 return null;
             }
 
-            //if (!appUser.PhoneNumberConfirmed)
-            //{
-            //    _logger.LogError("The phone number {phone} must be confirmed", appUser.PhoneNumber);
-            //    return null;
-            //}
+            if (!appUser.PhoneNumberConfirmed)
+            {
+                _logger.LogError("The phone number {phone} must be confirmed", appUser.PhoneNumber);
+                return null;
+            }
 
             if (!await this._userManager.CheckPasswordAsync(appUser, tokenRequest.Password))
             {
