@@ -90,14 +90,16 @@ namespace Phoenix.Auth.Controllers
             }
         }
 
-        private async Task<ApplicationUser?> AuthenticateBasicPhoneAsync(LoginBasicPhoneModel tokenRequest,
+        private async Task<ApplicationUser?> AuthenticateBasicPhoneAsync(LoginBasicPhoneModel model,
             CancellationToken cancellationToken = default)
         {
-            var appUser = await _userManager.FindByPhoneNumberAsync(tokenRequest.Phone, cancellationToken);
+            var fullPhone = model.PhoneCountryCode + model.Phone;
+
+            var appUser = await _userManager.FindByPhoneNumberAsync(fullPhone, cancellationToken);
 
             if (appUser is null)
             {
-                _logger.LogError("No User found with phone number {phone}", tokenRequest.Phone);
+                _logger.LogError("No User found with phone number {phone}", fullPhone);
                 return null;
             }
 
@@ -107,7 +109,7 @@ namespace Phoenix.Auth.Controllers
                 return null;
             }
 
-            if (!await this._userManager.CheckPasswordAsync(appUser, tokenRequest.Password))
+            if (!await this._userManager.CheckPasswordAsync(appUser, model.Password))
             {
                 _logger.LogError("The password for user with phone number {phone} is not correct", appUser.PhoneNumber);
                 return null;
@@ -116,13 +118,13 @@ namespace Phoenix.Auth.Controllers
             return appUser;
         }
 
-        private async Task<ApplicationUser?> AuthenticateBasicEmailAsync(LoginBasicEmailModel tokenRequest)
+        private async Task<ApplicationUser?> AuthenticateBasicEmailAsync(LoginBasicEmailModel model)
         {
-            var appUser = await _userManager.FindByEmailAsync(tokenRequest.Email);
+            var appUser = await _userManager.FindByEmailAsync(model.Email);
 
             if (appUser is null)
             {
-                _logger.LogError("No User found with email {email}", tokenRequest.Email);
+                _logger.LogError("No User found with email {email}", model.Email);
                 return null;
             }
 
@@ -132,7 +134,7 @@ namespace Phoenix.Auth.Controllers
                 return null;
             }
 
-            if (!await this._userManager.CheckPasswordAsync(appUser, tokenRequest.Password))
+            if (!await this._userManager.CheckPasswordAsync(appUser, model.Password))
             {
                 _logger.LogError("The password for user with email {eamil} is not correct", appUser.Email);
                 return null;

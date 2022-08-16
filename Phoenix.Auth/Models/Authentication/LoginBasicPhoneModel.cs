@@ -8,7 +8,13 @@ namespace Phoenix.Auth.Models.Auth
     public class LoginBasicPhoneModel
     {
         [Required]
+        [RegularExpression(@"^\+\d{1,3}$")]
+        [JsonProperty("phone_country_code", Required = Required.Always)]
+        public string PhoneCountryCode { get; set; }
+
+        [Required]
         [Phone]
+        [RegularExpression(@"^\d{1,12}$")]
         [JsonProperty("phone", Required = Required.Always)]
         public string Phone { get; set; }
 
