@@ -103,7 +103,7 @@ namespace Phoenix.Auth.Controllers
                 return null;
             }
 
-            if (!appUser.PhoneNumberConfirmed)
+            if (!appUser.PhoneNumberConfirmed && !appUser.EmailConfirmed)
             {
                 _logger.LogError("The phone number {phone} must be confirmed", appUser.PhoneNumber);
                 return null;
