@@ -21,6 +21,7 @@ namespace Phoenix.Auth.Models.Account
         public string LastName { get; set; }
 
         [Phone]
+        [RegularExpression(@"^\+\d{1,15}$")]
         [JsonProperty("phone", Required = Required.Always)]
         public string PhoneNumber { get; set; }
 
